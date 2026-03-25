@@ -49,7 +49,7 @@ def get_google_sheet():
         raise Exception("No se encontró la hoja de cálculo llamada 'Alquileres Dptos'. Verifica que esté compartida con el bot.")
     return sheet
 
-def save_to_google_sheets(habitacion: str, inquilino: str, precio: float, fecha_inicio: str, fecha_registro: str):
+def save_to_google_sheets(habitacion: str, inquilino: str, precio: float, fecha_inicio: str, fecha_registro: str, metodo_pago: str):
     """
     Guarda un nuevo registro en Google Sheets con lógica de autocompletado en la nube.
     """
@@ -76,10 +76,10 @@ def save_to_google_sheets(habitacion: str, inquilino: str, precio: float, fecha_
     
     # Si la hoja está verdaderamente vacía (sin cabeceras), las creamos
     if not all_records and len(sheet.get_all_values()) == 0:
-        headers = ["Fecha de Registro", "Habitación/Dpto", "Nombre del Inquilino", "Precio Pagado", "Fecha de Inicio"]
+        headers = ["Fecha de Registro", "Habitación/Dpto", "Nombre del Inquilino", "Precio Pagado", "Fecha de Inicio", "Método de Pago"]
         sheet.append_row(headers)
     
-    new_row = [fecha_registro, habitacion, inquilino, precio, fecha_inicio]
+    new_row = [fecha_registro, habitacion, inquilino, precio, fecha_inicio, metodo_pago]
     sheet.append_row(new_row)
 
 @app.get("/", response_class=HTMLResponse)
@@ -98,7 +98,8 @@ async def process_form(
     habitacion: str = Form(...),
     inquilino: str = Form(default=""),
     precio: float = Form(...),
-    fecha_inicio: str = Form(default="")
+    fecha_inicio: str = Form(default=""),
+    metodo_pago: str = Form(...)
 ):
     """
     Recibe los datos usando el método POST del formulario html, los manda a Google Sheets en la nube.
@@ -106,7 +107,7 @@ async def process_form(
     fecha_registro = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     
     try:
-        save_to_google_sheets(habitacion, inquilino, precio, fecha_inicio, fecha_registro)
+        save_to_google_sheets(habitacion, inquilino, precio, fecha_inicio, fecha_registro, metodo_pago)
         return RedirectResponse(url="/?success=true", status_code=303)
     except Exception as e:
         import urllib.parse
