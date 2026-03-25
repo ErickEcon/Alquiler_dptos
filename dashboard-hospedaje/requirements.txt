@@ -1,0 +1,8 @@
+gspread
+google-auth
+pandas
+plotly
+reportlab
+python-dotenv
+numpy
+matplotlib
